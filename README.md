@@ -22,7 +22,29 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+- Require library in `Capfile`
+```ruby
+require 'capistrano/jira'
+```
+
+- Set general parameters in `config/deploy.rb`
+```ruby
+set :jira_username,    'john.doe@exalmple.com' # default: ENV['CAPISTRANO_JIRA_USERNAME']
+set :jira_password,    'p@55w0rD' # default: ENV['CAPISTRANO_JIRA_PASSWORD']
+set :jira_site,        'https://example.atlassian.net' # default: ENV['CAPISTRANO_JIRA_SITE']
+set :jira_project_key, 'PROJ' # required
+```
+
+- Set parameters for specific environment (for example `config/deploy/staging.rb`)
+```ruby
+set :jira_status_name,     'QA passed' # required; name of status from which issues should be transited
+set :jira_transition_name, 'Deploy to staging' # required; name of transition that should be executed
+set :jira_filter_jql,      'component = Backend' # optional; additional JQL filter to scope issues
+```
+
+Then while running deployment you should see transitioned issues.
+
+When transition fails for some reason (for example HTTP Error) it will inform you but NOT fail whole deployment.
 
 ## Development
 
