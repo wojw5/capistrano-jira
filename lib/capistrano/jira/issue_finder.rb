@@ -23,6 +23,10 @@ module Capistrano
 
       def execute
         Jira.client.Issue.jql(jql, fields: ['status'], max_results: 1_000_000)
+      rescue JIRA::HTTPError => e
+        r = e.response
+        raise FinderError,
+              "#{r.class.name}; #{r.code}: #{r.message} \n #{r.body}"
       end
     end
   end

@@ -46,6 +46,28 @@ Then while running deployment you should see transitioned issues.
 
 When transition fails for some reason (for example HTTP Error) it will inform you but NOT fail whole deployment.
 
+## Checking setup
+
+To check if setup is proper or diagnose a problem run for your environment
+```
+cap staging jira:check
+```
+
+Proper output will be similar to this:
+```
+=> Required params
+jira_username = wojtek@codegarden.online
+jira_password = **********
+jira_site = https://example.atlassian.net
+jira_project_key = PROJ
+jira_status_name = QA passed
+jira_transition_name = Deploy to staging
+<= OK
+=> Checking connection
+<= OK
+=> Checking for given project key
+<= OK
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
