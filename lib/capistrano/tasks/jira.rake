@@ -14,14 +14,19 @@ namespace :jira do
   desc 'Find and transit possible JIRA issues'
   task :find_and_transit do |_t|
     puts 'Looking for issues'
-    issues = Capistrano::Jira::IssueFinder.new.find
-    issues.each do |issue|
-      begin
-        Capistrano::Jira::IssueTransiter.new(issue).transit
-        puts "#{issue.key}\t\u{2713} Transited"
-      rescue Capistrano::Jira::TransitionError => e
-        puts "#{issue.key}\t\u{2717} #{e.message}"
+    begin
+      issues = Capistrano::Jira::IssueFinder.new.find
+      issues.each do |issue|
+        begin
+          Capistrano::Jira::IssueTransiter.new(issue).transit
+          puts "#{issue.key}\t\u{2713} Transited"
+        rescue Capistrano::Jira::TransitionError => e
+          puts "#{issue.key}\t\u{2717} #{e.message}"
+        end
       end
+    rescue Capistrano::Jira::FinderError => e
+      puts 'dupka'
+      puts "#{e.class} #{e.message}"
     end
   end
 
