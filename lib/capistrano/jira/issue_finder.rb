@@ -3,6 +3,8 @@ module Capistrano
     class IssueFinder
       attr_reader :issues
 
+      include ErrorHelpers
+
       def find!
         @issues = execute
       end
@@ -24,9 +26,7 @@ module Capistrano
       def execute
         Jira.client.Issue.jql(jql, fields: ['status'], max_results: 1_000_000)
       rescue JIRA::HTTPError => e
-        r = e.response
-        raise FinderError,
-              "#{r.class.name}; #{r.code}: #{r.message} \n #{r.body}"
+        raise FinderError, error_message(e)
       end
     end
   end

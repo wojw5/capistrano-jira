@@ -30,9 +30,7 @@ module Capistrano
       def execute
         issue.transitions.build.save!(transition: { id: transition.id })
       rescue JIRA::HTTPError => e
-        r = e.response
-        raise TransitionError,
-              "#{r.class.name}; #{r.code}: #{r.message} \n #{r.body}"
+        raise TransitionError, error_message(e)
       end
     end
   end
