@@ -1,40 +1,44 @@
 namespace :load do
   task :defaults do
-    set :jira_username,        ENV['CAPISTRANO_JIRA_USERNAME']
-    set :jira_password,        ENV['CAPISTRANO_JIRA_PASSWORD']
-    set :jira_site,            ENV['CAPISTRANO_JIRA_SITE']
-    set :jira_project_key,     nil
-    set :jira_status_name,     nil
-    set :jira_transition_name, nil
-    set :jira_filter_jql,      nil
+    set :jira_username,              ENV['CAPISTRANO_JIRA_USERNAME']
+    set :jira_password,              ENV['CAPISTRANO_JIRA_PASSWORD']
+    set :jira_site,                  ENV['CAPISTRANO_JIRA_SITE']
+    set :jira_project_key,           nil
+    set :jira_status_name,           nil
+    set :jira_transition_name,       nil
+    set :jira_filter_jql,            nil
+    set :jira_comment_on_transition, true
   end
 end
 
 namespace :jira do
   desc 'Find and transit possible JIRA issues'
   task :find_and_transit do |_t|
-    puts 'Looking for issues'
-    begin
-      issues = Capistrano::Jira::IssueFinder.new.find
-      issues.each do |issue|
-        begin
-          Capistrano::Jira::IssueTransiter.new(issue).transit
-          puts "#{issue.key}\t\u{2713} Transited"
-        rescue Capistrano::Jira::TransitionError => e
-          puts "#{issue.key}\t\u{2717} #{e.message}"
+    on :all do |_host|
+      info 'Looking for issues'
+      begin
+        issues = Capistrano::Jira::IssueFinder.new.find
+        issues.each do |issue|
+          begin
+            Capistrano::Jira::IssueTransiter.new(issue).transit
+            info "#{issue.key}\t\u{2713} Transited"
+          rescue Capistrano::Jira::TransitionError => e
+            warn "#{issue.key}\t\u{2717} #{e.message}"
+          end
         end
+      rescue Capistrano::Jira::FinderError => e
+        error "#{e.class} #{e.message}"
       end
-    rescue Capistrano::Jira::FinderError => e
-      puts 'dupka'
-      puts "#{e.class} #{e.message}"
     end
   end
 
   desc 'Check JIRA setup'
   task :check do
     errored = false
-    required_params = %i(jira_username jira_password jira_site jira_project_key
-                         jira_status_name jira_transition_name)
+    required_params =
+      %i(jira_username jira_password jira_site jira_project_key
+         jira_status_name jira_transition_name jira_comment_on_transition)
+
     puts '=> Required params'
     required_params.each do |param|
       print "#{param} = "

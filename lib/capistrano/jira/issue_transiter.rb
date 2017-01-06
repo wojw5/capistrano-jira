@@ -21,16 +21,31 @@ module Capistrano
       end
 
       def validate_transition
-        unless transition
-          raise TransitionError,
-                "Transition #{fetch(:jira_transition_name)} not available"
-        end
+        return if transition
+        raise TransitionError,
+              "Transition #{fetch(:jira_transition_name)} not available"
       end
 
       def execute
-        issue.transitions.build.save!(transition: { id: transition.id })
+        issue.transitions.build.save!(transition_hash)
       rescue JIRA::HTTPError => e
         raise TransitionError, error_message(e)
+      end
+
+      def transition_hash
+        hash = { transition: { id: transition.id } }
+        hash.merge(comment_hash) if fetch(:jira_comment_on_transition)
+        hash
+      end
+
+      def comment_hash
+        { update:
+          { comment: [
+            { add:
+               {
+                 body: 'Issue transited automatically during deployment.'
+               } }
+          ] } }
       end
     end
   end
