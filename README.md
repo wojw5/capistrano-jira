@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/wojw5/capistrano-jira.svg?branch=master)](https://travis-ci.org/wojw5/capistrano-jira)
 [![Code Climate](https://codeclimate.com/github/wojw5/capistrano-jira/badges/gpa.svg)](https://codeclimate.com/github/wojw5/capistrano-jira)
 # Capistrano::Jira
 

@@ -17,10 +17,9 @@ Gem::Specification.new do |spec|
                .split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'capistrano'
-  spec.add_dependency 'jira-ruby'
+  spec.add_dependency 'capistrano', '~> 3.7'
+  spec.add_dependency 'jira-ruby', '~> 1.2'
 
   spec.add_development_dependency 'bundler', '~> 1.12'
   spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
 end
