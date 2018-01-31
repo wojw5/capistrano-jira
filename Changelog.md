@@ -1,3 +1,6 @@
+## 0.3.0
+- Filter transited issues by commit messages
+
 ## 0.2.0
 
 - Handle errors without exiting deployment (*wojw5*, #2)
