@@ -4,47 +4,31 @@ namespace :load do
     set :jira_password,                 ENV['CAPISTRANO_JIRA_PASSWORD']
     set :jira_site,                     ENV['CAPISTRANO_JIRA_SITE']
     set :jira_project_key,              nil
-    set :jira_status_name,              nil
-    set :jira_transition_name,          nil
-    set :jira_filter_jql,               nil
-    set :jira_comment_on_transition,    true
-    set :jira_validate_commit_messages, false
-    set :jira_commit_messages_limit,    1000
   end
 end
 
 namespace :jira do
-  desc 'Find and transit possible JIRA issues'
-  task :find_and_transit do |_t|
-    on :all do |_host|
-      if fetch(:jira_validate_commit_messages)
-        info 'Finding commit messages'
-        commits = Capistrano::Jira::CommitFinder.new.find
-      end
+  desc 'Update JIRA issues upon deployment'
+  task :update_issues do |_t|
+    on :app do |_|
+      sha_range = "#{fetch(:previous_revision)}...#{fetch(:current_revision)}"
+      commits = Capistrano::Jira::CommitFinder.new.find(sha_range: sha_range)
 
-      info 'Looking for issues'
+      ids = commits.flat_map { |c| c.ids }.uniq
+      info Rainbow("Found #{ids.count} issues across #{commits.count} commit messages").yellow
       begin
-        issues = Capistrano::Jira::IssueFinder.new.find
+        issues = Capistrano::Jira::IssueFinder.new.find(ids: ids)
 
         issues.each do |issue|
-          begin
-            if fetch(:jira_validate_commit_messages)
-              commit = commits.find { |c| c.message.include?(issue.key)}
-              if commit
-                Capistrano::Jira::IssueTransiter.new(issue).transit
-                info "#{issue.key}\t\u{2713} Transited\tCommit: #{commit.hash}"
-              else
-                info "#{issue.key}\t\u{21B7} Skipped"
-              end
-            else
-              Capistrano::Jira::IssueTransiter.new(issue).transit
-              info "#{issue.key}\t\u{2713} Transited"
-            end
-          rescue Capistrano::Jira::TransitionError => e
-            warn "#{issue.key}\t\u{2717} #{e.message}"
-          end
+          issue_commits = commits.select { |c| c.ids.include? issue.key }
+
+          commit_description = issue_commits.map { |c| "[#{c.hash}|https://github.com/#{fetch(:github_repos)}/commit/#{c.hash}] - #{c.title}" }.join("\n")
+
+          Capistrano::Jira::IssueUpdater.new(issue).comment(description: commit_description)
+          info Rainbow("#{issue.key}").green
+          issue_commits.each { |c| info " => #{c.to_s}" }
         end
-      rescue Capistrano::Jira::FinderError => e
+      rescue JIRA::HTTPError => e
         error "#{e.class} #{e.message}"
       end
     end
@@ -54,8 +38,7 @@ namespace :jira do
   task :check do
     errored = false
     required_params =
-      %i[jira_username jira_password jira_site jira_project_key
-         jira_status_name jira_transition_name jira_comment_on_transition]
+      %i[jira_username jira_password jira_site jira_project_key]
 
     puts '=> Required params'
     required_params.each do |param|
@@ -82,5 +65,5 @@ namespace :jira do
     puts '<= OK'
   end
 
-  after 'deploy:finished', 'jira:find_and_transit'
+  after 'deploy:finished', 'jira:update_issues'
 end

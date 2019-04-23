@@ -11,9 +11,9 @@ module Capistrano
           @items = self.class.finder_block.call
         end
 
-        def find
+        def find(args = {})
           return unless self.class.finder_block
-          @items ||= self.class.finder_block.call
+          @items ||= self.class.finder_block.call(args)
         end
       end
 

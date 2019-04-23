@@ -3,9 +3,9 @@ module Capistrano
     class CommitFinder
       include Finder
 
-      execute do
-        `git log -n#{fetch(:jira_commit_messages_limit)} --no-merges --pretty=format:"%h %s"`
-          .split("\n").map { |log| Commit.new(log) }
+      execute do |args|
+        splitter = "~~~~~~~"
+        `git log #{args[:sha_range]} --no-merges --pretty=format:'%h %B #{splitter}'`.split(splitter).map { |log| Commit.new(log) }
       end
     end
   end

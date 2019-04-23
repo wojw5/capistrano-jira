@@ -1,11 +1,10 @@
 require 'active_support'
 require 'capistrano/jira/version'
-require 'capistrano/jira/errors'
 require 'capistrano/jira/commit'
 require 'capistrano/jira/finder'
 require 'capistrano/jira/commit_finder'
 require 'capistrano/jira/issue_finder'
-require 'capistrano/jira/issue_transiter'
+require 'capistrano/jira/issue_updater'
 require 'jira-ruby'
 
 module Capistrano
