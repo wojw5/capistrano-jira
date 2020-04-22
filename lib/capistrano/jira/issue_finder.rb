@@ -17,7 +17,7 @@ module Capistrano
       def self.jql
         [
           "project = #{fetch(:jira_project_key)}",
-          "status = #{fetch(:jira_status_name)}",
+          "status = '#{fetch(:jira_status_name)}'",
           fetch(:jira_filter_jql)
         ].compact.join(' AND ')
       end
